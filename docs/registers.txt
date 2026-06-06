@@ -1,0 +1,37 @@
+This cpu has 16 registers. 7 specialised, 8 general purpose and 1 blank for when non applicable.
+
+Specialised:
+- pc (Program Counter)
+- acc (Accumulator)
+- ir (Instruction Register)
+- flz (Zero flag)
+- fls (Sign flag (pos/neg))
+- flc (Carry flag)
+- flo (Overflow Flag)
+
+General:
+- ra
+- rb
+- rc
+- rd
+- re
+- rf
+- rg
+- rh
+
+0x0 - No Register
+0x1 - ra
+0x2 - rb
+0x3 - rc
+0x4 - rd
+0x5 - re
+0x6 - rf
+0x7 - rg
+0x8 - rh
+0x9 - PC
+0xA - ACC
+0xB - IR
+0xC - FLZ
+0xD - FLS
+0xE - FLC
+0xF - FLO

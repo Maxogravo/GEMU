@@ -1,0 +1,36 @@
+The Gravy 16 uses a custom set of instructions and is based upon the Harvard architecture.
+This means ROM and RAM are split. ROM is used for storing the program. Instructions are fetched from there.
+RAM is used for storing data that is being used and updated. For example player health is a
+variable stored at 0xFFE3.
+
+Harvard architecture is common in embedded systems and game consoles. For example the Switch 2 uses a hybrid between Von-Neuman and Harvard.
+
+Instruction Structure:
+[00000|0000|0000|000]
+[opcode|reg A|reg B|unused]
+
+Opcodes:
+No Operation
+Move (reg A to reg B)
+Move Immediate (Number to reg A)
+Swap (reg A with reg B)
+Load (into reg A from memory)
+Store (reg A in memory)
+Add (reg A and reg B)
+Sub (reg A from reg B)
+Divide (reg A from reg B)
+Multiply (reg A from reg B)
+Increment (reg A)
+Decrement (reg B)
+Jump (to address)
+Jump (if zero to address)
+Jump (if carry to address)
+Jump (if negative)
+Jump (if overflow)
+And (reg A, reg B)
+Or (reg A, reg B)
+Not (reg A)
+Xor (reg A, reg B)
+Left Shift (reg A)
+Right Shift (reg A)
+Halt

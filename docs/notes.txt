@@ -1,0 +1,8 @@
+- Harvard Arch (ROM = Program, RAM = Data)
+- FDE cycle
+- Does not include graphics (YET!!)
+
+To Do:
+- Make calculations update flags
+- Find a way to read and load roms
+- GASM programming language
