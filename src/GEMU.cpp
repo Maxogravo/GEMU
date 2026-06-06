@@ -17,24 +17,76 @@ void SWAP(uint16_t &a, uint16_t &b) {  uint16_t temp = a; a = b; b  = temp;  }
 void LOAD(uint16_t &a) { reg[0x9]++; uint16_t addr = rom[reg[0x9]]; a = ram[addr];  }
 void STORE(uint16_t a) { reg[0x9]++; uint16_t addr = rom[reg[0x9]]; ram[addr] = a;}
 //Arithmetic
-void ADD(uint16_t a, uint16_t b)  {reg[0xA] = a + b;}
-void SUB(uint16_t a, uint16_t b) {reg[0xA] =  a - b;}
-void DIV(uint16_t a, uint16_t b) {
-    if (b == 0) {
-        term = true;
-        return;
-    }
-    reg[0xA] = a / b;
+void ADD(uint16_t a, uint16_t b)
+{
+    uint32_t full = (uint32_t)a + (uint32_t)b;
+    reg[0xA] = (uint16_t)full;
+    //flags
+    reg[0xC] = (reg[0xA] == 0);
+    reg[0xD] = ((reg[0xA] & 0x8000) != 0);
+    reg[0xE] = (full > 0xFFFF);
+    reg[0xF] = ((~(a ^ b) & (a ^ reg[0xA]) & 0x8000) != 0);
 }
-void MUL(uint16_t a, uint16_t b) {reg[0xA] = a*b;}
-void INC(uint16_t &a) {a++;}
-void DEC(uint16_t &a) {a--;}
+
+void SUB(uint16_t a, uint16_t b)
+{
+    reg[0xA] = a - b;
+    //flags
+    reg[0xC] = (reg[0xA] == 0);
+    reg[0xD] = ((reg[0xA] & 0x8000) != 0);
+    reg[0xE] = (a < b); // borrow
+    reg[0xF] = (((a ^ b) & (a ^ reg[0xA]) & 0x8000) != 0);
+}
+
+void MUL(uint16_t a, uint16_t b)
+{
+    uint32_t full = (uint32_t)a * (uint32_t)b;
+    reg[0xA] = (uint16_t)full;
+    //flags
+    reg[0xC] = (reg[0xA] == 0);
+    reg[0xD] = ((reg[0xA] & 0x8000) != 0);
+    reg[0xE] = (full > 0xFFFF);
+    reg[0xF] = 0;
+}
+
+void DIV(uint16_t a, uint16_t b)
+{
+    if (b == 0) {term = true;return;}
+    reg[0xA] = a / b;
+    //flags
+    reg[0xC] = (reg[0xA] == 0);
+    reg[0xD] = ((reg[0xA] & 0x8000) != 0);
+    reg[0xE] = 0;
+    reg[0xF] = 0;
+}
+
+void INC(uint16_t& a)
+{
+    ++a;
+    reg[0xA] = a;
+    //flags
+    reg[0xC] = (reg[0xA] == 0);
+    reg[0xD] = ((reg[0xA] & 0x8000) != 0);
+    reg[0xE] = 0;
+    reg[0xF] = (reg[0xA] == 0x8000);
+}
+
+void DEC(uint16_t& a)
+{
+    --a;
+    reg[0xA] = a;
+    //flags
+    reg[0xC] = (reg[0xA] == 0);
+    reg[0xD] = ((reg[0xA] & 0x8000) != 0);
+    reg[0xE] = 0;
+    reg[0xF] = (reg[0xA] == 0x7FFF);
+}
 //Flow Control
 void JMP() {reg[0x9]++; reg[0x9] = rom[reg[0x9]]; jump = true;}
-void JMPZ() {if (reg[0xC]==0x1){JMP();}}
-void JMPS() {if (reg[0xD]==0x1){JMP();}}
-void JMPC() {if (reg[0xE]==0x1){JMP();}}
-void JMPO() {if (reg[0xF]==0x1){JMP();}}
+void JMPZ() {if (reg[0xC]==0x1){JMP(); reg[0xC]=0x0;}}
+void JMPS() {if (reg[0xD]==0x1){JMP(); reg[0xD]=0x0;}}
+void JMPC() {if (reg[0xE]==0x1){JMP(); reg[0xE]=0x0;}}
+void JMPO() {if (reg[0xF]==0x1){JMP(); reg[0xF]=0x0;}}
 //Bitwise Operations
 void AND(uint16_t a, uint16_t b) {reg[0xA]=a&b;}
 void OR(uint16_t a, uint16_t b) {reg[0xA]=a|b;}
