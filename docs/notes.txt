@@ -3,5 +3,4 @@
 - Does not include graphics (YET!!)
 
 To Do:
-- Find a way to read and load roms
 - GASM programming language

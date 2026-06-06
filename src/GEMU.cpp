@@ -1,83 +1,130 @@
 #include <cstdint>
 #include <iostream>
 #include <sys/types.h>
+#include <string>
+#include <fstream>
 
 //define locations (ram, stack, registers)
 uint16_t rom[0x10000];//Uses an aray to simulate ROM
 uint16_t ram[0x10000]; //Uses an array to simulate RAM
 uint16_t reg[0x10]; //16 registers
+std::string fp; //filepath to ROM
 bool term = false; //terminate, used to determine wether program has been ended
 bool jump = false;
 
+void loadrom() {
+    std::ifstream file(fp);
+    std::string line;
+    size_t index = 0;
+
+    while (std::getline(file, line) && index < 0x10000) {
+        if (!line.empty() && line.back() == '%') {
+            line.pop_back();
+        }
+        // Detect format
+        if (line.rfind("0x", 0) == 0 || line.rfind("0X", 0) == 0) {
+            // hex
+            rom[index] = static_cast<uint16_t>(
+                std::stoul(line, nullptr, 16)
+            );
+        }
+        else {
+            // Binary
+            rom[index] = static_cast<uint16_t>(
+                std::stoul(line, nullptr, 2)
+            );
+        }
+        ++index;
+    }
+}
+
 //INSTRUCTIONS
 //Data Control
-void MOV(uint16_t a, uint16_t &b) {  b = a;  }
-void MOVI(uint16_t &a) {reg[0x9]++; a = rom[reg[0x9]];}
-void SWAP(uint16_t &a, uint16_t &b) {  uint16_t temp = a; a = b; b  = temp;  }
-void LOAD(uint16_t &a) { reg[0x9]++; uint16_t addr = rom[reg[0x9]]; a = ram[addr];  }
-void STORE(uint16_t a) { reg[0x9]++; uint16_t addr = rom[reg[0x9]]; ram[addr] = a;}
+void MOV(uint16_t a, uint16_t b) {
+    reg[b] = reg[a];
+}
+void MOVI(uint16_t a) {
+    reg[0x9]++;
+    reg[a] = rom[reg[0x9]];
+}
+void SWAP(uint16_t a, uint16_t b) {
+    uint16_t temp = reg[a];
+    reg[a] = reg[b];
+    reg[b] = temp;
+}
+void LOAD(uint16_t a) {
+    reg[0x9]++;
+    uint16_t addr = rom[reg[0x9]];
+    reg[a] = ram[addr];
+}
+void STORE(uint16_t a) {
+    reg[0x9]++;
+    uint16_t addr = rom[reg[0x9]];
+    ram[addr] = reg[a];
+}
 //Arithmetic
 void ADD(uint16_t a, uint16_t b)
 {
-    uint32_t full = (uint32_t)a + (uint32_t)b;
+    uint32_t full = (uint32_t)reg[a] + (uint32_t)reg[b];
     reg[0xA] = (uint16_t)full;
-    //flags
+
     reg[0xC] = (reg[0xA] == 0);
-    reg[0xD] = ((reg[0xA] & 0x8000) != 0);
+    reg[0xD] = (reg[0xA] & 0x8000);
     reg[0xE] = (full > 0xFFFF);
-    reg[0xF] = ((~(a ^ b) & (a ^ reg[0xA]) & 0x8000) != 0);
+    reg[0xF] = ((~(reg[a] ^ reg[b]) & (reg[a] ^ reg[0xA]) & 0x8000) != 0);
 }
 
 void SUB(uint16_t a, uint16_t b)
 {
-    reg[0xA] = a - b;
-    //flags
+    reg[0xA] = reg[a] - reg[b];
+
     reg[0xC] = (reg[0xA] == 0);
-    reg[0xD] = ((reg[0xA] & 0x8000) != 0);
-    reg[0xE] = (a < b); // borrow
-    reg[0xF] = (((a ^ b) & (a ^ reg[0xA]) & 0x8000) != 0);
+    reg[0xD] = (reg[0xA] & 0x8000);
+    reg[0xE] = (reg[a] < reg[b]);
+    reg[0xF] = (((reg[a] ^ reg[b]) & (reg[a] ^ reg[0xA]) & 0x8000) != 0);
 }
 
 void MUL(uint16_t a, uint16_t b)
 {
-    uint32_t full = (uint32_t)a * (uint32_t)b;
+    uint32_t full = (uint32_t)reg[a] * (uint32_t)reg[b];
     reg[0xA] = (uint16_t)full;
-    //flags
+
     reg[0xC] = (reg[0xA] == 0);
-    reg[0xD] = ((reg[0xA] & 0x8000) != 0);
+    reg[0xD] = (reg[0xA] & 0x8000);
     reg[0xE] = (full > 0xFFFF);
     reg[0xF] = 0;
 }
 
 void DIV(uint16_t a, uint16_t b)
 {
-    if (b == 0) {term = true;return;}
-    reg[0xA] = a / b;
-    //flags
+    if (reg[b] == 0) { term = true; return; }
+
+    reg[0xA] = reg[a] / reg[b];
+
     reg[0xC] = (reg[0xA] == 0);
-    reg[0xD] = ((reg[0xA] & 0x8000) != 0);
+    reg[0xD] = (reg[0xA] & 0x8000);
     reg[0xE] = 0;
     reg[0xF] = 0;
 }
 
-void INC(uint16_t& a)
+void INC(uint16_t a)
 {
-    ++a;
-    reg[0xA] = a;
-    //flags
+    ++reg[a];
+    reg[0xA] = reg[a];
+
     reg[0xC] = (reg[0xA] == 0);
-    reg[0xD] = ((reg[0xA] & 0x8000) != 0);
+    reg[0xD] = (reg[0xA] & 0x8000);
     reg[0xE] = 0;
     reg[0xF] = (reg[0xA] == 0x8000);
 }
 
-void DEC(uint16_t& a)
+void DEC(uint16_t a)
 {
-    --a;
-    reg[0xA] = a;
-    //flags
+    --reg[a];
+    reg[0xA] = reg[a];
+
     reg[0xC] = (reg[0xA] == 0);
-    reg[0xD] = ((reg[0xA] & 0x8000) != 0);
+    reg[0xD] = (reg[0xA] & 0x8000);
     reg[0xE] = 0;
     reg[0xF] = (reg[0xA] == 0x7FFF);
 }
@@ -88,15 +135,12 @@ void JMPS() {if (reg[0xD]==0x1){JMP(); reg[0xD]=0x0;}}
 void JMPC() {if (reg[0xE]==0x1){JMP(); reg[0xE]=0x0;}}
 void JMPO() {if (reg[0xF]==0x1){JMP(); reg[0xF]=0x0;}}
 //Bitwise Operations
-void AND(uint16_t a, uint16_t b) {reg[0xA]=a&b;}
-void OR(uint16_t a, uint16_t b) {reg[0xA]=a|b;}
-void XOR(uint16_t a, uint16_t b) {reg[0xA]=a^b;}
-void NOT(uint16_t a) {reg[0xA]=~a;}
-void LSHIFT(uint16_t a) {reg[0xA] = a<<1;}
-void RSHIFT(uint16_t a) {reg[0xA] = a>>1;}
-//Program
-void HALT() {term = true;}
-
+void AND(uint16_t a, uint16_t b) { reg[0xA] = reg[a] & reg[b]; }
+void OR(uint16_t a, uint16_t b)  { reg[0xA] = reg[a] | reg[b]; }
+void XOR(uint16_t a, uint16_t b) { reg[0xA] = reg[a] ^ reg[b]; }
+void NOT(uint16_t a)             { reg[0xA] = ~reg[a]; }
+void LSHIFT(uint16_t a)          { reg[0xA] = reg[a] << 1; }
+void RSHIFT(uint16_t a)          { reg[0xA] = reg[a] >> 1; }
 //Extra Functions
 void INCPC(){ // Incrememts the PC
     reg[0x9]++;
@@ -104,7 +148,11 @@ void INCPC(){ // Incrememts the PC
 
 //mainloop
 int main() {
+    std::cout << "Enter path to rom: ";
+    std:: cin >> fp;
+    loadrom();
     while(term!=true){
+        std::cout << "\nCurrent Cycle: " << reg[0x9];
         jump = false;
         //fetch
         reg[0xB] = rom[reg[0x9]]; //Take instruction from ROM and store it in the IR.
@@ -113,6 +161,7 @@ int main() {
         uint16_t rega = (reg[0xB] >> 7)  & 0x0F;
         uint16_t regb = (reg[0xB] >> 3)  & 0x0F;
         uint16_t unass = reg[0xB] & 0x07;
+        std::cout << "\nCurrent Instruction: " << opcode;
         //decode & execute
         switch (opcode) {
             case 0:
@@ -162,12 +211,14 @@ int main() {
             case 22:
                 RSHIFT(rega); break;
             case 23:
-                HALT(); break;
+                term = true; break;
+            default:
+                term = true; break;
 
         }
         //Increment PC
+        std::cout << "\nAccumulator: " << reg[0xA] << "\n\n";
         if (jump == false) {INCPC();}
-        std::cout << "\n" << reg[0x9];
     }
     std::cout << "Program Terminated";
     return 0;
