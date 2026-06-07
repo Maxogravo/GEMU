@@ -14,3 +14,12 @@ Maximum RAM capacity: 4,294,967,296 (~4GB)
 
 Chip: Gravy 16
 RAM Capacity: 65536  (~64KB)
+
+**To Do List***
+
+- I/O (input and output register)
+- Stack
+- CALL and RETURN instructions
+- IO loop (keyboard input, execute, output)
+- ASCII 
+- GASM programming language
