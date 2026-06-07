@@ -1,6 +1,6 @@
 **GEMU**
 
-⚠️Very Barebones⚠️
+⚠️Very Barebones⚠️\n
 GEMU is a custom written emulator for a custom designed CPU - the Gravy 16.
 I made it to learn and improve my c++ skills as I was quite new to the language while writing it.
 
