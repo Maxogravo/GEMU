@@ -3,11 +3,13 @@
 #include <sys/types.h>
 #include <string>
 #include <fstream>
+#include <stack>
 
 //define locations (ram, stack, registers)
 uint16_t rom[0x10000];//Uses an aray to simulate ROM
 uint16_t ram[0x10000]; //Uses an array to simulate RAM
 uint16_t reg[0x10]; //16 registers
+std::stack<uint16_t> stack; //stack
 std::string fp; //filepath to ROM
 bool term = false; //terminate, used to determine wether program has been ended
 bool jump = false;
@@ -61,6 +63,18 @@ void STORE(uint16_t a) {
     reg[0x9]++;
     uint16_t addr = rom[reg[0x9]];
     ram[addr] = reg[a];
+}
+void PUSH(uint16_t a){
+    stack.push(reg[a]);
+}
+void POP(uint16_t a){
+    if (stack.empty()){
+        term = true;
+        return;
+    }
+
+    reg[a] = stack.top();
+    stack.pop();
 }
 //Arithmetic
 void ADD(uint16_t a, uint16_t b)
@@ -177,40 +191,44 @@ int main() {
             case 5:
                 STORE(rega); break;
             case 6:
-                ADD(rega, regb); break;
+                PUSH(rega); break;
             case 7:
-                SUB(rega, regb); break;
+                POP(rega); break;
             case 8:
-                DIV(rega, regb); break;
+                ADD(rega, regb); break;
             case 9:
-                MUL(rega, regb); break;
+                SUB(rega, regb); break;
             case 10:
-                INC(rega); break;
+                DIV(rega, regb); break;
             case 11:
-                DEC(rega); break;
+                MUL(rega, regb); break;
             case 12:
-                JMP(); break;
+                INC(rega); break;
             case 13:
-                JMPZ(); break;
+                DEC(rega); break;
             case 14:
-                JMPC(); break;
+                JMP(); break;
             case 15:
-                JMPS(); break;
+                JMPZ(); break;
             case 16:
-                JMPO(); break;
+                JMPC(); break;
             case 17:
-                AND(rega, regb); break;
+                JMPS(); break;
             case 18:
-                OR(rega, regb); break;
+                JMPO(); break;
             case 19:
-                NOT(rega); break;
+                AND(rega, regb); break;
             case 20:
-                XOR(rega, regb); break;
+                OR(rega, regb); break;
             case 21:
-                LSHIFT(rega); break;
+                NOT(rega); break;
             case 22:
-                RSHIFT(rega); break;
+                XOR(rega, regb); break;
             case 23:
+                LSHIFT(rega); break;
+            case 24:
+                RSHIFT(rega); break;
+            case 25:
                 term = true; break;
             default:
                 term = true; break;
