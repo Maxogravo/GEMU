@@ -11,7 +11,5 @@ I made it to learn and improve my c++ skills as I was quite new to the language 
 **To Do List***
 
 - Simple console IO
-- CALL/RET
-- PUSH/POP
 - GASM programming language
 - Mini output log, shows crash messages and final values of all registers

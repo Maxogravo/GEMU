@@ -26,15 +26,11 @@ void loadrom() {
         // Detect format
         if (line.rfind("0x", 0) == 0 || line.rfind("0X", 0) == 0) {
             // hex
-            rom[index] = static_cast<uint16_t>(
-                std::stoul(line, nullptr, 16)
-            );
+            rom[index] = static_cast<uint16_t>(std::stoul(line, nullptr, 16));
         }
         else {
             // Binary
-            rom[index] = static_cast<uint16_t>(
-                std::stoul(line, nullptr, 2)
-            );
+            rom[index] = static_cast<uint16_t>(std::stoul(line, nullptr, 2));
         }
         ++index;
     }
@@ -148,6 +144,17 @@ void JMPZ() {if (reg[0xC]==0x1){JMP(); reg[0xC]=0x0;}}
 void JMPS() {if (reg[0xD]==0x1){JMP(); reg[0xD]=0x0;}}
 void JMPC() {if (reg[0xE]==0x1){JMP(); reg[0xE]=0x0;}}
 void JMPO() {if (reg[0xF]==0x1){JMP(); reg[0xF]=0x0;}}
+void CALL() {
+    uint16_t ret_address = reg[0x9] + 2;
+    stack.push(ret_address);
+    JMP();
+}
+void RET() {
+    if (stack.empty()) {term = true; return;}
+    reg[0x9] = stack.top();
+    stack.pop();
+    jump = true;
+}
 //Bitwise Operations
 void AND(uint16_t a, uint16_t b) { reg[0xA] = reg[a] & reg[b]; }
 void OR(uint16_t a, uint16_t b)  { reg[0xA] = reg[a] | reg[b]; }
@@ -217,18 +224,22 @@ int main() {
             case 18:
                 JMPO(); break;
             case 19:
-                AND(rega, regb); break;
+                CALL(); break;
             case 20:
-                OR(rega, regb); break;
+                RET(); break;
             case 21:
-                NOT(rega); break;
+                AND(rega, regb); break;
             case 22:
-                XOR(rega, regb); break;
+                OR(rega, regb); break;
             case 23:
-                LSHIFT(rega); break;
+                NOT(rega); break;
             case 24:
-                RSHIFT(rega); break;
+                XOR(rega, regb); break;
             case 25:
+                LSHIFT(rega); break;
+            case 26:
+                RSHIFT(rega); break;
+            case 27:
                 term = true; break;
             default:
                 term = true; break;
