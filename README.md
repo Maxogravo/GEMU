@@ -9,7 +9,5 @@ I made it to learn and improve my c++ skills as I was quite new to the language 
 - Custom ISA
 
 **To Do List***
-
-- Simple console IO
 - GASM programming language
 - Mini output log, shows crash messages and final values of all registers
