@@ -250,5 +250,6 @@ int main() {
         if (jump == false) {INCPC();}
     }
     std::cout << "Program Terminated";
+    std::cout << "\nRegister ra: " << reg[0x1];
     return 0;
 }
