@@ -6,6 +6,7 @@ I made it to learn and improve my c++ skills as I was quite new to the language 
 **Current Features**
 - Read binary/hexadecimal values from a .txt file and store in ROM
 - FDE cycle
+- Custom ISA
 
 **To Do List***
 
