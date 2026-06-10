@@ -9,10 +9,13 @@
 uint16_t rom[0x10000];//Uses an aray to simulate ROM
 uint16_t ram[0x10000]; //Uses an array to simulate RAM
 uint16_t reg[0x10]; //16 registers
+int cycles;
 std::stack<uint16_t> stack; //stack
 std::string fp; //filepath to ROM
 bool term = false; //terminate, used to determine wether program has been ended
 bool jump = false;
+char verbose; //Verbose output mode?
+std::string inst; //Stores the current instruction to print
 
 void loadrom() {
     std::ifstream file(fp);
@@ -171,9 +174,10 @@ void INCPC(){ // Incrememts the PC
 int main() {
     std::cout << "Enter path to rom: ";
     std:: cin >> fp;
+    std::cout << "\nVerbose mode (y/n)? ";
+    std::cin >> verbose;
     loadrom();
     while(term!=true){
-        std::cout << "\nCurrent Cycle: " << reg[0x9];
         jump = false;
         //fetch
         reg[0xB] = rom[reg[0x9]]; //Take instruction from ROM and store it in the IR.
@@ -182,74 +186,85 @@ int main() {
         uint16_t rega = (reg[0xB] >> 7)  & 0x0F;
         uint16_t regb = (reg[0xB] >> 3)  & 0x0F;
         uint16_t unass = reg[0xB] & 0x07;
-        std::cout << "\nCurrent Instruction: " << opcode;
         //decode & execute
         switch (opcode) {
             case 0:
-                break;
+                inst = "No Operation"; break;
             case 1:
-                MOV(rega,regb); break;
+                inst = "MOV"; MOV(rega,regb); break;
             case 2:
-                MOVI(rega); break;
+                inst = "MOV IMMEDIATE"; MOVI(rega); break;
             case 3:
-                SWAP(rega, regb); break;
+                inst = "SWAP"; SWAP(rega, regb); break;
             case 4:
-                LOAD(rega); break;
+                inst = "LOAD"; LOAD(rega); break;
             case 5:
-                STORE(rega); break;
+                inst = "STORE"; STORE(rega); break;
             case 6:
-                PUSH(rega); break;
+                inst = "PUSH"; PUSH(rega); break;
             case 7:
-                POP(rega); break;
+                inst = "POP"; POP(rega); break;
             case 8:
-                ADD(rega, regb); break;
+                inst = "ADD"; ADD(rega, regb); break;
             case 9:
-                SUB(rega, regb); break;
+                inst = "SUBTRACT"; SUB(rega, regb); break;
             case 10:
-                DIV(rega, regb); break;
+                inst = "DIVIDE"; DIV(rega, regb); break;
             case 11:
-                MUL(rega, regb); break;
+                inst = "MULTIPLY"; MUL(rega, regb); break;
             case 12:
-                INC(rega); break;
+                inst = "INCREMENT"; INC(rega); break;
             case 13:
-                DEC(rega); break;
+                inst = "DECREMENT"; DEC(rega); break;
             case 14:
-                JMP(); break;
+                inst = "JUMP"; JMP(); break;
             case 15:
-                JMPZ(); break;
+                inst = "JUMP IF ZERO"; JMPZ(); break;
             case 16:
-                JMPC(); break;
+                inst = "JUMP IF CARRY"; JMPC(); break;
             case 17:
-                JMPS(); break;
+                inst = "JUMP IF NEGATIVE"; JMPS(); break;
             case 18:
-                JMPO(); break;
+                inst = "JUMP IF OVERFLOW"; JMPO(); break;
             case 19:
-                CALL(); break;
+                inst = "CALL"; CALL(); break;
             case 20:
-                RET(); break;
+                inst = "RETURN"; RET(); break;
             case 21:
-                AND(rega, regb); break;
+                inst = "AND"; AND(rega, regb); break;
             case 22:
-                OR(rega, regb); break;
+                inst = "OR"; OR(rega, regb); break;
             case 23:
-                NOT(rega); break;
+                inst = "NOT"; NOT(rega); break;
             case 24:
-                XOR(rega, regb); break;
+                inst = "XOR"; XOR(rega, regb); break;
             case 25:
-                LSHIFT(rega); break;
+                inst = "LEFT SHIFT"; LSHIFT(rega); break;
             case 26:
-                RSHIFT(rega); break;
+                inst = "RIGHT SHIFT"; RSHIFT(rega); break;
             case 27:
-                term = true; break;
+                inst = "HALT"; term = true; break;
             default:
                 term = true; break;
 
         }
         //Increment PC
-        std::cout << "\nAccumulator: " << reg[0xA] << "\n\n";
+        if (verbose == 'y'){
+            std::cout << "\nCurrent Cycle: " << cycles;
+            std::cout << "\nCurrent Instruction: " << inst;
+            std::cout << "\nAccumulator Value: " << reg[0xA];
+        }
         if (jump == false) {INCPC();}
+        cycles++;
     }
-    std::cout << "Program Terminated";
+    std::cout << "\n\nProgram Terminated";
     std::cout << "\nRegister ra: " << reg[0x1];
+    std::cout << "\nRegister rb: " << reg[0x2];
+    std::cout << "\nRegister rc: " << reg[0x3];
+    std::cout << "\nRegister rd: " << reg[0x4];
+    std::cout << "\nRegister re: " << reg[0x5];
+    std::cout << "\nRegister rf: " << reg[0x6];
+    std::cout << "\nRegister rg: " << reg[0x7];
+    std::cout << "\nRegister rh: " << reg[0x8];
     return 0;
 }
