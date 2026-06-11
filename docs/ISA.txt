@@ -34,3 +34,7 @@ Xor (reg A, reg B)
 Left Shift (reg A)
 Right Shift (reg A)
 Halt
+
+Other Important Information:
+- Data is read one word at a time. Say you have an instruction like Jump, the adress to jump to would be stroed on the next line. 
+Any instruction that requires another value like an address or immediate, that secondary value is stored on the next line.
