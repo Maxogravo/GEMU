@@ -4,7 +4,7 @@
 #include <string>
 #include <fstream>
 #include <stack>
-#include <SDL3/SDL.h>
+#include "raylib.h"
 
 //define locations (ram, stack, registers)
 uint16_t rom[0x10000];//Uses an aray to simulate ROM
@@ -17,6 +17,11 @@ bool term = false; //terminate, used to determine wether program has been ended
 bool jump = false;
 char verbose; //Verbose output mode?
 std::string inst; //Stores the current instruction to print
+int rows;
+int cols;
+int pixeladdr;
+int current_pixel;
+Color pixel_color;
 
 void loadrom() {
     std::ifstream file(fp);
@@ -171,8 +176,6 @@ void NOT(uint16_t a)             { reg[0xA] = ~reg[a]; }
 void LSHIFT(uint16_t a)          { reg[0xA] = reg[a] << 1; }
 void RSHIFT(uint16_t a)          { reg[0xA] = reg[a] >> 1; }
 
-//graphics
-void render(){}
 
 //mainloop
 void cpu_fde() {
@@ -267,22 +270,45 @@ int main() {
     std::cin >> verbose;
     loadrom();
 
-    //sdl window
-    if (!SDL_Init(SDL_INIT_VIDEO))
-    return 1;
-    SDL_Window* window = SDL_CreateWindow("GEMU", 640, 640, 0);
-    bool running = true;
+    InitWindow(640,640,"GEMU");
+    SetTargetFPS(60);
 
-    while (running){
+    while (!WindowShouldClose()) {
+        pixeladdr = 0;
         cpu_fde();
-        render();
+        //render
+        BeginDrawing();
+        ClearBackground(BLACK);
+        for (rows; rows < 64; rows++){
+            for (cols;cols < 64; cols++) {
+                current_pixel = ram[0xF000+pixeladdr];
+                switch (current_pixel){
+                    case 0:
+                        pixel_color = BLACK; break;
+                    case 1:
+                        pixel_color = WHITE; break;
+                    case 2:
+                        pixel_color = RED; break;
+                    case 3:
+                        pixel_color = GREEN; break;
+                    case 4:
+                        pixel_color = BLUE; break;
+                    case 5:
+                        pixel_color = YELLOW; break;
+                    case 6:
+                        pixel_color = PURPLE; break;
+                    case 7:
+                        pixel_color = ORANGE; break;
+                }
+                DrawRectangle(cols*10,rows*10,10,10,pixel_color);
+                pixeladdr++;
 
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {if (event.type == SDL_EVENT_QUIT) running = false;}
-        SDL_Delay(16); // ~60 FPS
+            }
+        }
+        EndDrawing();
+
+
     }
-    SDL_DestroyWindow(window);
-    SDL_Quit();
     //Program Terminated
     std::cout << "\n\nProgram Terminated";
     std::cout << "\nRegister ra: " << reg[0x1];
@@ -292,5 +318,6 @@ int main() {
     std::cout << "\nRegister re: " << reg[0x5];
     std::cout << "\nRegister rf: " << reg[0x6];
     std::cout << "\nRegister rg: " << reg[0x7];
-    std::cout << "\nRegister rh: " << reg[0x8];
+    std::cout << "\nRegister rh: " << reg[0x8] << "\n";
+    CloseWindow();
 }

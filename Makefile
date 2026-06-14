@@ -1,5 +1,5 @@
 main:
-	g++ src/GEMU.cpp -o GEMU $(shell pkg-config --cflags --libs sdl3)
+	g++ src/GEMU.cpp -o GEMU $(shell pkg-config --cflags --libs raylib)
 
 tools:
 	g++ src/hexconv.cpp -o hex
