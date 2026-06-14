@@ -1,0 +1,3 @@
+GRAPHICS
+Graphics work with a framebuffer style. locations 0xF000 to 0x10000 are reserved for graphics, each representing one of the 4096 pixels on a 64x64
+screen. The value within that location of memory correspods to a colour that that pixel will be rendered as. The screen is rendered every cpu cycle.

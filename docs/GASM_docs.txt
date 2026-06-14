@@ -18,3 +18,4 @@ JMPZ; <- Jump if zero (this one doesnt require any minor words)
 JMP; <- Sometimes an instruction doesnt need to specify any other registers. 
 0x2;
 HALT;
+

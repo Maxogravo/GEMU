@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <stack>
+#include <SDL3/SDL.h>
 
 //define locations (ram, stack, registers)
 uint16_t rom[0x10000];//Uses an aray to simulate ROM
@@ -26,7 +27,7 @@ void loadrom() {
         if (!line.empty() && line.back() == '%') {
             line.pop_back();
         }
-        // Detect format
+        // detect format
         if (line.rfind("0x", 0) == 0 || line.rfind("0X", 0) == 0) {
             // hex
             rom[index] = static_cast<uint16_t>(std::stoul(line, nullptr, 16));
@@ -37,6 +38,10 @@ void loadrom() {
         }
         ++index;
     }
+}
+
+void INCPC(){ // Incrememts the PC
+    reg[0x9]++;
 }
 
 //INSTRUCTIONS
@@ -165,18 +170,13 @@ void XOR(uint16_t a, uint16_t b) { reg[0xA] = reg[a] ^ reg[b]; }
 void NOT(uint16_t a)             { reg[0xA] = ~reg[a]; }
 void LSHIFT(uint16_t a)          { reg[0xA] = reg[a] << 1; }
 void RSHIFT(uint16_t a)          { reg[0xA] = reg[a] >> 1; }
-//Extra Functions
-void INCPC(){ // Incrememts the PC
-    reg[0x9]++;
-}
+
+//graphics
+void render(){}
 
 //mainloop
-int main() {
-    std::cout << "Enter path to rom: ";
-    std:: cin >> fp;
-    std::cout << "\nVerbose mode (y/n)? ";
-    std::cin >> verbose;
-    loadrom();
+void cpu_fde() {
+
     while(term!=true){
         jump = false;
         //fetch
@@ -249,14 +249,41 @@ int main() {
 
         }
         //Increment PC
-        if (verbose == 'y'){
+        if (verbose == 'y' and term == false){
             std::cout << "\nCurrent Cycle: " << cycles;
             std::cout << "\nCurrent Instruction: " << inst;
             std::cout << "\nAccumulator Value: " << reg[0xA];
         }
         if (jump == false) {INCPC();}
         cycles++;
+
     }
+}
+
+int main() {
+    std::cout << "Enter path to rom: ";
+    std:: cin >> fp;
+    std::cout << "\nVerbose mode (y/n)? ";
+    std::cin >> verbose;
+    loadrom();
+
+    //sdl window
+    if (!SDL_Init(SDL_INIT_VIDEO))
+    return 1;
+    SDL_Window* window = SDL_CreateWindow("GEMU", 640, 640, 0);
+    bool running = true;
+
+    while (running){
+        cpu_fde();
+        render();
+
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {if (event.type == SDL_EVENT_QUIT) running = false;}
+        SDL_Delay(16); // ~60 FPS
+    }
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    //Program Terminated
     std::cout << "\n\nProgram Terminated";
     std::cout << "\nRegister ra: " << reg[0x1];
     std::cout << "\nRegister rb: " << reg[0x2];
@@ -266,5 +293,4 @@ int main() {
     std::cout << "\nRegister rf: " << reg[0x6];
     std::cout << "\nRegister rg: " << reg[0x7];
     std::cout << "\nRegister rh: " << reg[0x8];
-    return 0;
 }
