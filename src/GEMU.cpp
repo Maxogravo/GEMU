@@ -7,8 +7,8 @@
 #include "raylib.h"
 
 //define locations (ram, stack, registers)
-uint16_t rom[0x10000];//Uses an aray to simulate ROM
-uint16_t ram[0x10000]; //Uses an array to simulate RAM
+uint16_t rom[0xFFFF];//Uses an aray to simulate ROM
+uint16_t ram[0xFFFF]; //Uses an array to simulate RAM
 uint16_t reg[0x10]; //16 registers
 int cycles;
 std::stack<uint16_t> stack; //stack
@@ -17,11 +17,11 @@ bool term = false; //terminate, used to determine wether program has been ended
 bool jump = false;
 char verbose; //Verbose output mode?
 std::string inst; //Stores the current instruction to print
-int rows;
-int cols;
 int pixeladdr;
-int current_pixel;
-Color pixel_color;
+Color colors[21] = {
+        DARKGRAY, MAROON, ORANGE, DARKGREEN, DARKBLUE, DARKPURPLE, DARKBROWN,
+        GRAY, RED, GOLD, LIME, BLUE, VIOLET, BROWN, LIGHTGRAY, PINK, YELLOW,
+        GREEN, SKYBLUE, PURPLE, BEIGE };
 
 void loadrom() {
     std::ifstream file(fp);
@@ -176,93 +176,6 @@ void NOT(uint16_t a)             { reg[0xA] = ~reg[a]; }
 void LSHIFT(uint16_t a)          { reg[0xA] = reg[a] << 1; }
 void RSHIFT(uint16_t a)          { reg[0xA] = reg[a] >> 1; }
 
-
-//mainloop
-void cpu_fde() {
-
-    while(term!=true){
-        jump = false;
-        //fetch
-        reg[0xB] = rom[reg[0x9]]; //Take instruction from ROM and store it in the IR.
-        //seperate individual components from instruction
-        uint16_t opcode = (reg[0xB] >> 11) & 0x1F;
-        uint16_t rega = (reg[0xB] >> 7)  & 0x0F;
-        uint16_t regb = (reg[0xB] >> 3)  & 0x0F;
-        uint16_t unass = reg[0xB] & 0x07;
-        //decode & execute
-        switch (opcode) {
-            case 0:
-                inst = "No Operation"; break;
-            case 1:
-                inst = "MOV"; MOV(rega,regb); break;
-            case 2:
-                inst = "MOV IMMEDIATE"; MOVI(rega); break;
-            case 3:
-                inst = "SWAP"; SWAP(rega, regb); break;
-            case 4:
-                inst = "LOAD"; LOAD(rega); break;
-            case 5:
-                inst = "STORE"; STORE(rega); break;
-            case 6:
-                inst = "PUSH"; PUSH(rega); break;
-            case 7:
-                inst = "POP"; POP(rega); break;
-            case 8:
-                inst = "ADD"; ADD(rega, regb); break;
-            case 9:
-                inst = "SUBTRACT"; SUB(rega, regb); break;
-            case 10:
-                inst = "DIVIDE"; DIV(rega, regb); break;
-            case 11:
-                inst = "MULTIPLY"; MUL(rega, regb); break;
-            case 12:
-                inst = "INCREMENT"; INC(rega); break;
-            case 13:
-                inst = "DECREMENT"; DEC(rega); break;
-            case 14:
-                inst = "JUMP"; JMP(); break;
-            case 15:
-                inst = "JUMP IF ZERO"; JMPZ(); break;
-            case 16:
-                inst = "JUMP IF CARRY"; JMPC(); break;
-            case 17:
-                inst = "JUMP IF NEGATIVE"; JMPS(); break;
-            case 18:
-                inst = "JUMP IF OVERFLOW"; JMPO(); break;
-            case 19:
-                inst = "CALL"; CALL(); break;
-            case 20:
-                inst = "RETURN"; RET(); break;
-            case 21:
-                inst = "AND"; AND(rega, regb); break;
-            case 22:
-                inst = "OR"; OR(rega, regb); break;
-            case 23:
-                inst = "NOT"; NOT(rega); break;
-            case 24:
-                inst = "XOR"; XOR(rega, regb); break;
-            case 25:
-                inst = "LEFT SHIFT"; LSHIFT(rega); break;
-            case 26:
-                inst = "RIGHT SHIFT"; RSHIFT(rega); break;
-            case 27:
-                inst = "HALT"; term = true; break;
-            default:
-                term = true; break;
-
-        }
-        //Increment PC
-        if (verbose == 'y' and term == false){
-            std::cout << "\nCurrent Cycle: " << cycles;
-            std::cout << "\nCurrent Instruction: " << inst;
-            std::cout << "\nAccumulator Value: " << reg[0xA];
-        }
-        if (jump == false) {INCPC();}
-        cycles++;
-
-    }
-}
-
 int main() {
     std::cout << "Enter path to rom: ";
     std:: cin >> fp;
@@ -274,40 +187,106 @@ int main() {
     SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
-        pixeladdr = 0;
-        cpu_fde();
-        //render
+        while(!term){
+            jump = false;
+            //fetch
+            reg[0xB] = rom[reg[0x9]]; //Take instruction from ROM and store it in the IR.
+            //seperate individual components from instruction
+            uint16_t opcode = (reg[0xB] >> 11) & 0x1F;
+            uint16_t rega = (reg[0xB] >> 7)  & 0x0F;
+            uint16_t regb = (reg[0xB] >> 3)  & 0x0F;
+            uint16_t unass = reg[0xB] & 0x07;
+            //decode & execute
+            switch (opcode) {
+                case 0:
+                    inst = "No Operation"; break;
+                case 1:
+                    inst = "MOV"; MOV(rega,regb); break;
+                case 2:
+                    inst = "MOV IMMEDIATE"; MOVI(rega); break;
+                case 3:
+                    inst = "SWAP"; SWAP(rega, regb); break;
+                case 4:
+                    inst = "LOAD"; LOAD(rega); break;
+                case 5:
+                    inst = "STORE"; STORE(rega); break;
+                case 6:
+                    inst = "PUSH"; PUSH(rega); break;
+                case 7:
+                    inst = "POP"; POP(rega); break;
+                case 8:
+                    inst = "ADD"; ADD(rega, regb); break;
+                case 9:
+                    inst = "SUBTRACT"; SUB(rega, regb); break;
+                case 10:
+                    inst = "DIVIDE"; DIV(rega, regb); break;
+                case 11:
+                    inst = "MULTIPLY"; MUL(rega, regb); break;
+                case 12:
+                    inst = "INCREMENT"; INC(rega); break;
+                case 13:
+                    inst = "DECREMENT"; DEC(rega); break;
+                case 14:
+                    inst = "JUMP"; JMP(); break;
+                case 15:
+                    inst = "JUMP IF ZERO"; JMPZ(); break;
+                case 16:
+                    inst = "JUMP IF CARRY"; JMPC(); break;
+                case 17:
+                    inst = "JUMP IF NEGATIVE"; JMPS(); break;
+                case 18:
+                    inst = "JUMP IF OVERFLOW"; JMPO(); break;
+                case 19:
+                    inst = "CALL"; CALL(); break;
+                case 20:
+                    inst = "RETURN"; RET(); break;
+                case 21:
+                    inst = "AND"; AND(rega, regb); break;
+                case 22:
+                    inst = "OR"; OR(rega, regb); break;
+                case 23:
+                    inst = "NOT"; NOT(rega); break;
+                case 24:
+                    inst = "XOR"; XOR(rega, regb); break;
+                case 25:
+                    inst = "LEFT SHIFT"; LSHIFT(rega); break;
+                case 26:
+                    inst = "RIGHT SHIFT"; RSHIFT(rega); break;
+                case 27:
+                    inst = "HALT"; term = true; break;
+                default:
+                    term = true; break;
+
+            }
+            pixeladdr = 0xF000;
+            BeginDrawing();
+            ClearBackground(BLACK);
+            for(int row = 0; row<64; row++){
+                for(int col = 0; col<64; col++){
+                    DrawRectangle(col*10, row*10, 10,10, colors[ram[pixeladdr]]);
+                    pixeladdr++;
+                }
+            }
+            EndDrawing();
+
+            if (verbose == 'y' and term == false){
+            std::cout << "\nCurrent Cycle: " << cycles;
+            std::cout << "\nCurrent Instruction: " << inst;
+            std::cout << "\nAccumulator Value: " << reg[0xA];
+            }
+            if (jump == false) {INCPC();}
+            cycles++;
+        }
+        pixeladdr = 0xF000;
         BeginDrawing();
         ClearBackground(BLACK);
-        for (rows; rows < 64; rows++){
-            for (cols;cols < 64; cols++) {
-                current_pixel = ram[0xF000+pixeladdr];
-                switch (current_pixel){
-                    case 0:
-                        pixel_color = BLACK; break;
-                    case 1:
-                        pixel_color = WHITE; break;
-                    case 2:
-                        pixel_color = RED; break;
-                    case 3:
-                        pixel_color = GREEN; break;
-                    case 4:
-                        pixel_color = BLUE; break;
-                    case 5:
-                        pixel_color = YELLOW; break;
-                    case 6:
-                        pixel_color = PURPLE; break;
-                    case 7:
-                        pixel_color = ORANGE; break;
-                }
-                DrawRectangle(cols*10,rows*10,10,10,pixel_color);
+        for(int row = 0; row<64; row++){
+            for(int col = 0; col<64; col++){
+                DrawRectangle(col*10, row*10, 10,10, colors[ram[pixeladdr]]);
                 pixeladdr++;
-
             }
         }
         EndDrawing();
-
-
     }
     //Program Terminated
     std::cout << "\n\nProgram Terminated";

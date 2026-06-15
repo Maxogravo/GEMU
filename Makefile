@@ -4,6 +4,9 @@ main:
 tools:
 	g++ src/hexconv.cpp -o hex
 
+test:
+	g++ src/gtest.cpp -o gtest $(shell pkg-config --cflags --libs raylib)
+	
 run:
 	./GEMU
 
