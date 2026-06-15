@@ -18,8 +18,8 @@ bool jump = false;
 char verbose; //Verbose output mode?
 std::string inst; //Stores the current instruction to print
 int pixeladdr;
-Color colors[21] = {
-        DARKGRAY, MAROON, ORANGE, DARKGREEN, DARKBLUE, DARKPURPLE, DARKBROWN,
+Color colors[22] = {
+        BLACK, WHITE, ORANGE, DARKGRAY, DARKGREEN, DARKBLUE, DARKPURPLE, DARKBROWN,
         GRAY, RED, GOLD, LIME, BLUE, VIOLET, BROWN, LIGHTGRAY, PINK, YELLOW,
         GREEN, SKYBLUE, PURPLE, BEIGE };
 
