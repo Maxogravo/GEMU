@@ -73,6 +73,13 @@ void STORE(uint16_t a) {
     uint16_t addr = rom[reg[0x9]];
     ram[addr] = reg[a];
 }
+void STOREI(){
+    reg[0x9]++;
+    uint16_t val = rom[reg[0x9]];
+    reg[0x9]++;
+    ram[rom[reg[0x9]]] = val;
+
+}
 void PUSH(uint16_t a){
     stack.push(reg[a]);
 }
@@ -211,48 +218,50 @@ int main() {
                 case 5:
                     inst = "STORE"; STORE(rega); break;
                 case 6:
-                    inst = "PUSH"; PUSH(rega); break;
+                    inst = "STORE IMMEDIATE"; STOREI(); break;
                 case 7:
-                    inst = "POP"; POP(rega); break;
+                    inst = "PUSH"; PUSH(rega); break;
                 case 8:
-                    inst = "ADD"; ADD(rega, regb); break;
+                    inst = "POP"; POP(rega); break;
                 case 9:
-                    inst = "SUBTRACT"; SUB(rega, regb); break;
+                    inst = "ADD"; ADD(rega, regb); break;
                 case 10:
-                    inst = "DIVIDE"; DIV(rega, regb); break;
+                    inst = "SUBTRACT"; SUB(rega, regb); break;
                 case 11:
-                    inst = "MULTIPLY"; MUL(rega, regb); break;
+                    inst = "DIVIDE"; DIV(rega, regb); break;
                 case 12:
-                    inst = "INCREMENT"; INC(rega); break;
+                    inst = "MULTIPLY"; MUL(rega, regb); break;
                 case 13:
-                    inst = "DECREMENT"; DEC(rega); break;
+                    inst = "INCREMENT"; INC(rega); break;
                 case 14:
-                    inst = "JUMP"; JMP(); break;
+                    inst = "DECREMENT"; DEC(rega); break;
                 case 15:
-                    inst = "JUMP IF ZERO"; JMPZ(); break;
+                    inst = "JUMP"; JMP(); break;
                 case 16:
-                    inst = "JUMP IF CARRY"; JMPC(); break;
+                    inst = "JUMP IF ZERO"; JMPZ(); break;
                 case 17:
-                    inst = "JUMP IF NEGATIVE"; JMPS(); break;
+                    inst = "JUMP IF CARRY"; JMPC(); break;
                 case 18:
-                    inst = "JUMP IF OVERFLOW"; JMPO(); break;
+                    inst = "JUMP IF NEGATIVE"; JMPS(); break;
                 case 19:
-                    inst = "CALL"; CALL(); break;
+                    inst = "JUMP IF OVERFLOW"; JMPO(); break;
                 case 20:
-                    inst = "RETURN"; RET(); break;
+                    inst = "CALL"; CALL(); break;
                 case 21:
-                    inst = "AND"; AND(rega, regb); break;
+                    inst = "RETURN"; RET(); break;
                 case 22:
-                    inst = "OR"; OR(rega, regb); break;
+                    inst = "AND"; AND(rega, regb); break;
                 case 23:
-                    inst = "NOT"; NOT(rega); break;
+                    inst = "OR"; OR(rega, regb); break;
                 case 24:
-                    inst = "XOR"; XOR(rega, regb); break;
+                    inst = "NOT"; NOT(rega); break;
                 case 25:
-                    inst = "LEFT SHIFT"; LSHIFT(rega); break;
+                    inst = "XOR"; XOR(rega, regb); break;
                 case 26:
-                    inst = "RIGHT SHIFT"; RSHIFT(rega); break;
+                    inst = "LEFT SHIFT"; LSHIFT(rega); break;
                 case 27:
+                    inst = "RIGHT SHIFT"; RSHIFT(rega); break;
+                case 28:
                     inst = "HALT"; term = true; break;
                 default:
                     term = true; break;

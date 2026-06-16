@@ -1,8 +1,0 @@
-MOVI ra;
-0x6;
-DEC ra;
-JMPZ;
-0x7;
-JMP;
-0x2;
-HALT;

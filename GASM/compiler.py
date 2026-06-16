@@ -31,52 +31,54 @@ with open(fp) as f:
                         opcode = "00011"
                     case "LOAD":
                         opcode = "00100"
-                    case "STORE":
+                    case "STOR":
                         opcode = "00101"
                     case "PUSH":
-                        opcode = "00110"
-                    case "POP":
                         opcode = "00111"
-                    case "ADD":
+                    case "POP":
                         opcode = "01000"
-                    case "SUB":
+                    case "ADD":
                         opcode = "01001"
-                    case "DIV":
+                    case "SUB":
                         opcode = "01010"
-                    case "MUL":
+                    case "DIV":
                         opcode = "01011"
-                    case "INC":
+                    case "MUL":
                         opcode = "01100"
-                    case "DEC":
+                    case "INC":
                         opcode = "01101"
-                    case "JMP":
+                    case "DEC":
                         opcode = "01110"
-                    case "JMPZ":
+                    case "JMP":
                         opcode = "01111"
-                    case "JMPC":
+                    case "JMPZ":
                         opcode = "10000"
-                    case "JMPS":
+                    case "JMPC":
                         opcode = "10001"
-                    case "JMPO":
+                    case "JMPS":
                         opcode = "10010"
-                    case "CALL":
+                    case "JMPO":
                         opcode = "10011"
-                    case "RET":
+                    case "CALL":
                         opcode = "10100"
-                    case "AND":
+                    case "RET":
                         opcode = "10101"
-                    case "OR":
+                    case "AND":
                         opcode = "10110"
-                    case "NOT":
+                    case "OR":
                         opcode = "10111"
-                    case "XOR":
+                    case "NOT":
                         opcode = "11000"
-                    case "LSHIFT":
+                    case "XOR":
                         opcode = "11001"
-                    case "RSHIFT":
+                    case "LSHIFT":
                         opcode = "11010"
-                    case "HALT":
+                    case "RSHIFT":
                         opcode = "11011"
+                    case "HALT":
+                        opcode = "11100"
+                    case "STORI":
+                        opcode = "00110"
                     case "ra":
                         if stage == 1:
                             rega = "0001"
