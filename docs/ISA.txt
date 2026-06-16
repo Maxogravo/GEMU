@@ -28,6 +28,8 @@ Jump (if zero to address)
 Jump (if carry to address)
 Jump (if negative)
 Jump (if overflow)
+Call
+Return
 And (reg A, reg B)
 Or (reg A, reg B)
 Not (reg A)
