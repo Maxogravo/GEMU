@@ -1,7 +1,7 @@
 The Gravy 16 uses a custom set of instructions and is based upon the Harvard architecture.
 This means ROM and RAM are split. ROM is used for storing the program. Instructions are fetched from there.
 RAM is used for storing data that is being used and updated. For example player health is a
-variable stored at 0xFFE3.
+variable stored at 0x1.
 
 Harvard architecture is common in embedded systems and game consoles. For example the Switch 2 uses a hybrid between Von-Neuman and Harvard.
 
@@ -38,6 +38,6 @@ Left Shift (reg A)
 Right Shift (reg A)
 Halt
 
-Other Important Information:
-- Data is read one word at a time. Say you have an instruction like Jump, the adress to jump to would be stroed on the next line. 
+Words:
+Data is read one word at a time. Say you have an instruction like Jump, the adress to jump to would be stroed on the next line. 
 Any instruction that requires another value like an address or immediate, that secondary value is stored on the next line.

@@ -1,8 +1,8 @@
 import os
-fp = input("Enter path to program: ")
-fp = os.getcwd() + "/" + fp
-fn = input("Enter a file path for the finished program: ")
-fn = os.getcwd() + "/" + fn + ".txt"
+fp = input("Enter program filename: ")
+fp = os.getcwd() + "/GASM/programs/" + fp
+fn = input("Enter a name for the generated file: ")
+fn = os.getcwd() + "/roms/" + fn + ".txt"
 print(fn)
 
 with open(fp) as f:
