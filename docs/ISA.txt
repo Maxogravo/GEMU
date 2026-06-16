@@ -16,6 +16,7 @@ Move Immediate (Number to reg A)
 Swap (reg A with reg B)
 Load (into reg A from memory)
 Store (reg A in memory)
+Store Immediate
 Add (reg A and reg B)
 Sub (reg A from reg B)
 Divide (reg A from reg B)
