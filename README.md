@@ -4,6 +4,13 @@
 GEMU is an emulator for a custom designed CPU - the Gravy 16, also complete with a mini language to produce programs for it!
 I made it to learn and improve my c++ skills as I was quite new to the language while writing it. I also made it to learn and undertsand key concepts of low level computing. 
 
+# Features
+- Read binary/hexadecimal values from a .txt file and store in ROM
+- FDE cycle
+- Custom ISA
+- Mini programming language based on assembly
+- Graphics using a framebuffer and raylib window
+
 # How To Use
 ## Prerequisites
 Before using GEMU, ensure that Raylib is installed and correctly configured on your system.
@@ -42,10 +49,7 @@ Example: roms/example.rom
 When GEMU starts, you can enable verbose mode.
 Verbose mode displays information about each instruction as it is executed, including the current cycle, instruction name, and accumulator value.
 
-# Features
-- Read binary/hexadecimal values from a .txt file and store in ROM
-- FDE cycle
-- Custom ISA
-- Mini programming language based on assembly
-- Graphics using a framebuffer and raylib window
+# Example Programs
+### Dots (Graphics demo)
+![example](images/example1.png)
 
