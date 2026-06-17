@@ -1,4 +1,5 @@
 # GEMU
+![logo](images/logo.png)
 
 GEMU is an emulator for a custom designed CPU - the Gravy 16, also complete with a mini language to produce programs for it!
 I made it to learn and improve my c++ skills as I was quite new to the language while writing it. I also made it to learn and undertsand key concepts of low level computing. 
