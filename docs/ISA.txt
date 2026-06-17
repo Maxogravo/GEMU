@@ -15,7 +15,7 @@ Move (reg A to reg B)
 Move Immediate (Number to reg A)
 Swap (reg A with reg B)
 Load (into reg A from memory)
-Store (reg A in memory)
+Store (reg A in memory either represented as an immediate word or by the value of another register)
 Store Immediate
 Add (reg A and reg B)
 Sub (reg A from reg B)

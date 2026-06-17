@@ -75,8 +75,12 @@ with open(fp) as f:
                         opcode = "11010"
                     case "RSHIFT":
                         opcode = "11011"
-                    case "HALT":
+                    case "CLS":
                         opcode = "11100"
+                    case "PXL":
+                        opcode = "11101"
+                    case "HALT":
+                        opcode = "11110"
                     case "STORI":
                         opcode = "00110"
                     case "ra":

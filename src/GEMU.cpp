@@ -63,14 +63,20 @@ void SWAP(uint16_t a, uint16_t b) {
     reg[a] = reg[b];
     reg[b] = temp;
 }
-void LOAD(uint16_t a) {
-    reg[0x9]++;
-    uint16_t addr = rom[reg[0x9]];
+void LOAD(uint16_t a, uint16_t b) {
+    uint16_t addr;
+    if(b==0x0){
+        reg[0x9]++;
+        addr = rom[reg[0x9]];
+    }else{addr = reg[b];}
     reg[a] = ram[addr];
 }
-void STORE(uint16_t a) {
-    reg[0x9]++;
-    uint16_t addr = rom[reg[0x9]];
+void STORE(uint16_t a, uint16_t b) {
+    uint16_t addr;
+    if (b==0x0){
+        reg[0x9]++;
+        addr = rom[reg[0x9]];
+    } else {addr = reg[b];}
     ram[addr] = reg[a];
 }
 void STOREI(){
@@ -95,8 +101,13 @@ void POP(uint16_t a){
 //Arithmetic
 void ADD(uint16_t a, uint16_t b)
 {
-    uint32_t full = (uint32_t)reg[a] + (uint32_t)reg[b];
+    uint32_t full;
+    if(b==0x0){
+        reg[0x9]++;
+        full = (uint32_t)reg[a] + rom[reg[0x9]];
+    }else{full = (uint32_t)reg[a] + (uint32_t)reg[b];}
     reg[0xA] = (uint16_t)full;
+    reg[a] = (uint16_t)full;
 
     reg[0xC] = (reg[0xA] == 0);
     reg[0xD] = (reg[0xA] & 0x8000);
@@ -106,7 +117,13 @@ void ADD(uint16_t a, uint16_t b)
 
 void SUB(uint16_t a, uint16_t b)
 {
-    reg[0xA] = reg[a] - reg[b];
+    uint32_t val;
+    if (b==0){
+        reg[0x9]++;
+        val = reg[a] - rom[reg[0x9]];
+    }else{val = reg[a]-reg[b];}
+    reg[0xA] = (uint16_t)val;
+    reg[a] = (uint16_t)val;
 
     reg[0xC] = (reg[0xA] == 0);
     reg[0xD] = (reg[0xA] & 0x8000);
@@ -116,8 +133,13 @@ void SUB(uint16_t a, uint16_t b)
 
 void MUL(uint16_t a, uint16_t b)
 {
-    uint32_t full = (uint32_t)reg[a] * (uint32_t)reg[b];
+    uint32_t full;
+    if (b==0x0){
+        reg[0x9]++;
+        full = (uint32_t)reg[a] * rom[reg[0x9]];
+    }else{full = (uint32_t)reg[a] * (uint32_t)reg[b];}
     reg[0xA] = (uint16_t)full;
+    reg[a] = (uint16_t)full;
 
     reg[0xC] = (reg[0xA] == 0);
     reg[0xD] = (reg[0xA] & 0x8000);
@@ -127,9 +149,16 @@ void MUL(uint16_t a, uint16_t b)
 
 void DIV(uint16_t a, uint16_t b)
 {
-    if (reg[b] == 0) { term = true; return; }
+    uint16_t val;
+    if (b==0){
+        if(rom[reg[0x9]++]!=0){
+            reg[0x9]++;
+            val = reg[a] / rom[reg[0x9]];
+        }else{term=true;}
+    }else{if (reg[b] == 0) { term = true; return; } val = reg[a]/reg[b];}
 
-    reg[0xA] = reg[a] / reg[b];
+    reg[0xA] = val;
+    reg[a] = val;
 
     reg[0xC] = (reg[0xA] == 0);
     reg[0xD] = (reg[0xA] & 0x8000);
@@ -182,6 +211,19 @@ void XOR(uint16_t a, uint16_t b) { reg[0xA] = reg[a] ^ reg[b]; }
 void NOT(uint16_t a)             { reg[0xA] = ~reg[a]; }
 void LSHIFT(uint16_t a)          { reg[0xA] = reg[a] << 1; }
 void RSHIFT(uint16_t a)          { reg[0xA] = reg[a] >> 1; }
+//Graphics
+void CLS(){
+    for (uint16_t locs = 0; locs < 4096; locs++) {ram[0xF000 + locs] = 0;}
+}
+void PXL() {
+    reg[0x9]++; uint16_t x = rom[reg[0x9]];
+    reg[0x9]++; uint16_t y = rom[reg[0x9]];
+    reg[0x9]++; uint16_t colour = rom[reg[0x9]];
+    if (x >= 64 || y >= 64)
+        return;
+
+    ram[0xF000 + y * 64 + x] = colour;
+}
 
 int main() {
     std::cout << "Enter path to rom: ";
@@ -191,7 +233,7 @@ int main() {
     loadrom();
 
     InitWindow(640,640,"GEMU");
-    SetTargetFPS(60);
+    SetTargetFPS(4);
 
     while (!WindowShouldClose()) {
         while(!term){
@@ -214,9 +256,9 @@ int main() {
                 case 3:
                     inst = "SWAP"; SWAP(rega, regb); break;
                 case 4:
-                    inst = "LOAD"; LOAD(rega); break;
+                    inst = "LOAD"; LOAD(rega, regb); break;
                 case 5:
-                    inst = "STORE"; STORE(rega); break;
+                    inst = "STORE"; STORE(rega, regb); break;
                 case 6:
                     inst = "STORE IMMEDIATE"; STOREI(); break;
                 case 7:
@@ -262,6 +304,10 @@ int main() {
                 case 27:
                     inst = "RIGHT SHIFT"; RSHIFT(rega); break;
                 case 28:
+                    inst = "Clear Screen"; CLS(); break;
+                case 29:
+                    inst = "Plot Pixel"; PXL(); break;
+                case 30:
                     inst = "HALT"; term = true; break;
                 default:
                     term = true; break;
