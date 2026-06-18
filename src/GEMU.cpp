@@ -9,8 +9,17 @@
 //define locations (ram, stack, registers)
 uint16_t rom[0xFFFF];//Uses an aray to simulate ROM
 uint16_t ram[0xFFFF]; //Uses an array to simulate RAM
-uint16_t reg[0x10]; //16 registers
+uint16_t reg[0xF]; //16 registers
+uint16_t acc;
+uint16_t ir;
+uint16_t pc;
+uint16_t flo;
+uint16_t flc;
+uint16_t flag_sign;
+uint16_t flz;
+
 int cycles;
+int frames;
 std::stack<uint16_t> stack; //stack
 std::string fp; //filepath to ROM
 bool term = false; //terminate, used to determine wether program has been ended
@@ -46,7 +55,7 @@ void loadrom() {
 }
 
 void INCPC(){ // Incrememts the PC
-    reg[0x9]++;
+    pc++;
 }
 
 //INSTRUCTIONS
@@ -55,8 +64,8 @@ void MOV(uint16_t a, uint16_t b) {
     reg[b] = reg[a];
 }
 void MOVI(uint16_t a) {
-    reg[0x9]++;
-    reg[a] = rom[reg[0x9]];
+    pc++;
+    reg[a] = rom[pc];
 }
 void SWAP(uint16_t a, uint16_t b) {
     uint16_t temp = reg[a];
@@ -66,24 +75,24 @@ void SWAP(uint16_t a, uint16_t b) {
 void LOAD(uint16_t a, uint16_t b) {
     uint16_t addr;
     if(b==0x0){
-        reg[0x9]++;
-        addr = rom[reg[0x9]];
+        pc++;
+        addr = rom[pc];
     }else{addr = reg[b];}
     reg[a] = ram[addr];
 }
 void STORE(uint16_t a, uint16_t b) {
     uint16_t addr;
     if (b==0x0){
-        reg[0x9]++;
-        addr = rom[reg[0x9]];
+        pc++;
+        addr = rom[pc];
     } else {addr = reg[b];}
     ram[addr] = reg[a];
 }
 void STOREI(){
-    reg[0x9]++;
-    uint16_t val = rom[reg[0x9]];
-    reg[0x9]++;
-    ram[rom[reg[0x9]]] = val;
+    pc++;
+    uint16_t val = rom[pc];
+    pc++;
+    ram[rom[pc]] = val;
 
 }
 void PUSH(uint16_t a){
@@ -103,122 +112,122 @@ void ADD(uint16_t a, uint16_t b)
 {
     uint32_t full;
     if(b==0x0){
-        reg[0x9]++;
-        full = (uint32_t)reg[a] + rom[reg[0x9]];
+        pc++;
+        full = (uint32_t)reg[a] + rom[pc];
     }else{full = (uint32_t)reg[a] + (uint32_t)reg[b];}
-    reg[0xA] = (uint16_t)full;
+    acc = (uint16_t)full;
     reg[a] = (uint16_t)full;
 
-    reg[0xC] = (reg[0xA] == 0);
-    reg[0xD] = (reg[0xA] & 0x8000);
-    reg[0xE] = (full > 0xFFFF);
-    reg[0xF] = ((~(reg[a] ^ reg[b]) & (reg[a] ^ reg[0xA]) & 0x8000) != 0);
+    flz = (acc == 0);
+    flag_sign = (acc & 0x8000);
+    flc = (full > 0xFFFF);
+    flo = ((~(reg[a] ^ reg[b]) & (reg[a] ^ acc) & 0x8000) != 0);
 }
 
 void SUB(uint16_t a, uint16_t b)
 {
     uint32_t val;
     if (b==0){
-        reg[0x9]++;
-        val = reg[a] - rom[reg[0x9]];
+        pc++;
+        val = reg[a] - rom[pc];
     }else{val = reg[a]-reg[b];}
-    reg[0xA] = (uint16_t)val;
+    acc = (uint16_t)val;
     reg[a] = (uint16_t)val;
 
-    reg[0xC] = (reg[0xA] == 0);
-    reg[0xD] = (reg[0xA] & 0x8000);
-    reg[0xE] = (reg[a] < reg[b]);
-    reg[0xF] = (((reg[a] ^ reg[b]) & (reg[a] ^ reg[0xA]) & 0x8000) != 0);
+    flz = (acc == 0);
+    flag_sign = (acc & 0x8000);
+    flc = (reg[a] < reg[b]);
+    flo = (((reg[a] ^ reg[b]) & (reg[a] ^ acc) & 0x8000) != 0);
 }
 
 void MUL(uint16_t a, uint16_t b)
 {
     uint32_t full;
     if (b==0x0){
-        reg[0x9]++;
-        full = (uint32_t)reg[a] * rom[reg[0x9]];
+        pc++;
+        full = (uint32_t)reg[a] * rom[pc];
     }else{full = (uint32_t)reg[a] * (uint32_t)reg[b];}
-    reg[0xA] = (uint16_t)full;
+    acc = (uint16_t)full;
     reg[a] = (uint16_t)full;
 
-    reg[0xC] = (reg[0xA] == 0);
-    reg[0xD] = (reg[0xA] & 0x8000);
-    reg[0xE] = (full > 0xFFFF);
-    reg[0xF] = 0;
+    flz = (acc == 0);
+    flag_sign = (acc & 0x8000);
+    flc = (full > 0xFFFF);
+    flo = 0;
 }
 
 void DIV(uint16_t a, uint16_t b)
 {
     uint16_t val;
     if (b==0){
-        if(rom[reg[0x9]++]!=0){
-            reg[0x9]++;
-            val = reg[a] / rom[reg[0x9]];
+        if(rom[pc++]!=0){
+            pc++;
+            val = reg[a] / rom[pc];
         }else{term=true;}
     }else{if (reg[b] == 0) { term = true; return; } val = reg[a]/reg[b];}
 
-    reg[0xA] = val;
+    acc = val;
     reg[a] = val;
 
-    reg[0xC] = (reg[0xA] == 0);
-    reg[0xD] = (reg[0xA] & 0x8000);
-    reg[0xE] = 0;
-    reg[0xF] = 0;
+    flz = (acc == 0);
+    flag_sign = (acc & 0x8000);
+    flc = 0;
+    flo = 0;
 }
 
 void INC(uint16_t a)
 {
     ++reg[a];
-    reg[0xA] = reg[a];
+    acc = reg[a];
 
-    reg[0xC] = (reg[0xA] == 0);
-    reg[0xD] = (reg[0xA] & 0x8000);
-    reg[0xE] = 0;
-    reg[0xF] = (reg[0xA] == 0x8000);
+    flz = (acc == 0);
+    flag_sign = (acc & 0x8000);
+    flc = 0;
+    flo = (acc == 0x8000);
 }
 
 void DEC(uint16_t a)
 {
     --reg[a];
-    reg[0xA] = reg[a];
+    acc = reg[a];
 
-    reg[0xC] = (reg[0xA] == 0);
-    reg[0xD] = (reg[0xA] & 0x8000);
-    reg[0xE] = 0;
-    reg[0xF] = (reg[0xA] == 0x7FFF);
+    flz = (acc == 0);
+    flag_sign = (acc & 0x8000);
+    flc = 0;
+    flo = (acc == 0x7FFF);
 }
 //Flow Control
-void JMP() {reg[0x9]++; reg[0x9] = rom[reg[0x9]]; jump = true;}
-void JMPZ() {if (reg[0xC]==0x1){JMP(); reg[0xC]=0x0;}}
-void JMPS() {if (reg[0xD]==0x1){JMP(); reg[0xD]=0x0;}}
-void JMPC() {if (reg[0xE]==0x1){JMP(); reg[0xE]=0x0;}}
-void JMPO() {if (reg[0xF]==0x1){JMP(); reg[0xF]=0x0;}}
+void JMP() {pc++; pc = rom[pc]; jump = true;}
+void JMPZ() {if (flz==0x1){JMP(); flz=0x0;}}
+void JMPS() {if (flag_sign==0x1){JMP(); flag_sign=0x0;}}
+void JMPC() {if (flc==0x1){JMP(); flc=0x0;}}
+void JMPO() {if (flo==0x1){JMP(); flo=0x0;}}
 void CALL() {
-    uint16_t ret_address = reg[0x9] + 2;
+    uint16_t ret_address = pc + 2;
     stack.push(ret_address);
     JMP();
 }
 void RET() {
     if (stack.empty()) {term = true; return;}
-    reg[0x9] = stack.top();
+    pc = stack.top();
     stack.pop();
     jump = true;
 }
 //Bitwise Operations
-void AND(uint16_t a, uint16_t b) { reg[0xA] = reg[a] & reg[b]; }
-void OR(uint16_t a, uint16_t b)  { reg[0xA] = reg[a] | reg[b]; }
-void XOR(uint16_t a, uint16_t b) { reg[0xA] = reg[a] ^ reg[b]; }
-void NOT(uint16_t a)             { reg[0xA] = ~reg[a]; }
-void LSHIFT(uint16_t a)          { reg[0xA] = reg[a] << 1; }
-void RSHIFT(uint16_t a)          { reg[0xA] = reg[a] >> 1; }
+void AND(uint16_t a, uint16_t b) { acc = reg[a] & reg[b]; }
+void OR(uint16_t a, uint16_t b)  { acc = reg[a] | reg[b]; }
+void XOR(uint16_t a, uint16_t b) { acc = reg[a] ^ reg[b]; }
+void NOT(uint16_t a)             { acc = ~reg[a]; }
+void LSHIFT(uint16_t a)          { acc = reg[a] << 1; }
+void RSHIFT(uint16_t a)          { acc = reg[a] >> 1; }
 //Graphics
 void CLS(){
     for (uint16_t locs = 0; locs < 4096; locs++) {ram[0xF000 + locs] = 0;}
 }
 void PXL() {
-    reg[0x9]++; uint16_t x = rom[reg[0x9]];
-    reg[0x9]++; uint16_t y = rom[reg[0x9]];
-    reg[0x9]++; uint16_t colour = rom[reg[0x9]];
+    pc++; uint16_t x = rom[pc];
+    pc++; uint16_t y = rom[pc];
+    pc++; uint16_t colour = rom[pc];
     if (x >= 64 || y >= 64)
         return;
 
@@ -230,21 +239,23 @@ int main() {
     std:: cin >> fp;
     std::cout << "\nVerbose mode (y/n)? ";
     std::cin >> verbose;
+    std::cout << "\nEnter FPS: ";
+    std::cin >> frames;
     loadrom();
 
     InitWindow(640,640,"GEMU");
-    SetTargetFPS(4);
+    SetTargetFPS(frames);
 
     while (!WindowShouldClose()) {
         while(!term){
             jump = false;
             //fetch
-            reg[0xB] = rom[reg[0x9]]; //Take instruction from ROM and store it in the IR.
+            ir = rom[pc]; //Take instruction from ROM and store it in the IR.
             //seperate individual components from instruction
-            uint16_t opcode = (reg[0xB] >> 11) & 0x1F;
-            uint16_t rega = (reg[0xB] >> 7)  & 0x0F;
-            uint16_t regb = (reg[0xB] >> 3)  & 0x0F;
-            uint16_t unass = reg[0xB] & 0x07;
+            uint16_t opcode = (ir >> 11) & 0x1F;
+            uint16_t rega = (ir >> 7)  & 0x0F;
+            uint16_t regb = (ir >> 3)  & 0x0F;
+            uint16_t unass = ir & 0x07;
             //decode & execute
             switch (opcode) {
                 case 0:
@@ -327,7 +338,7 @@ int main() {
             if (verbose == 'y' and term == false){
             std::cout << "\nCurrent Cycle: " << cycles;
             std::cout << "\nCurrent Instruction: " << inst;
-            std::cout << "\nAccumulator Value: " << reg[0xA];
+            std::cout << "\nAccumulator Value: " << acc;
             }
             if (jump == false) {INCPC();}
             cycles++;
