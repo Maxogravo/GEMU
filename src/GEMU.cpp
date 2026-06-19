@@ -74,10 +74,7 @@ void SWAP(uint16_t a, uint16_t b) {
 }
 void LOAD(uint16_t a, uint16_t b) {
     uint16_t addr;
-    if(b==0x0){
-        pc++;
-        addr = rom[pc];
-    }else{addr = reg[b];}
+    if(b==0x0){pc++; addr = rom[pc];}else{addr = reg[b];}
     reg[a] = ram[addr];
 }
 void STORE(uint16_t a, uint16_t b) {
