@@ -224,13 +224,14 @@ void RSHIFT(uint16_t a)          { acc = reg[a] >> 1; }
 void CLS(){
     for (uint16_t locs = 0; locs < 4096; locs++) {ram[0xF000 + locs] = 0;}
 }
-void PXL() {
-    pc++; uint16_t x = rom[pc];
-    pc++; uint16_t y = rom[pc];
-    pc++; uint16_t colour = rom[pc];
-    if (x >= 64 || y >= 64)
-        return;
-
+void PXL(uint16_t a, uint16_t b) {
+    uint16_t x;
+    uint16_t y;
+    uint16_t colour;
+    if (a==0){pc++; x = rom[pc];if(x>=64){return;}}else{x = reg[a];}
+    if (b==0){pc++; y = rom[pc];if(y>=64){return;}}else{y = reg[b];}
+    pc++;
+    colour = rom[pc];
     ram[0xF000 + y * 64 + x] = colour;
 }
 
@@ -317,7 +318,7 @@ int main() {
                 case 28:
                     inst = "Clear Screen"; CLS(); break;
                 case 29:
-                    inst = "Plot Pixel"; PXL(); break;
+                    inst = "Plot Pixel"; PXL(rega, regb); break;
                 case 30:
                     inst = "HALT"; term = true; break;
                 default:

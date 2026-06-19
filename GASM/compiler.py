@@ -83,6 +83,8 @@ with open(fp) as f:
                         opcode = "11110"
                     case "STORI":
                         opcode = "00110"
+                    case "nr":
+                        opcode = '0000'
                     case "ra":
                         if stage == 1:
                             rega = "0001"
@@ -123,37 +125,37 @@ with open(fp) as f:
                             rega = "1000"
                         else:
                             regb = "1000"
-                    case "pc":
+                    case "ri":
                         if stage == 1:
                             rega = "1001"
                         else:
                             regb = "1001"
-                    case "acc":
+                    case "rj":
                         if stage == 1:
                             rega = "1010"
                         else:
                             regb = "1010"
-                    case "ir":
+                    case "rk":
                         if stage == 1:
                             rega = "1011"
                         else:
                             regb = "1011"
-                    case "flz":
+                    case "rl":
                         if stage == 1:
                             rega = "1100"
                         else:
                             regb = "1100"
-                    case "fls":
+                    case "rm":
                         if stage == 1:
                             rega = "1101"
                         else:
                             regb = "1101"
-                    case "flc":
+                    case "rn":
                         if stage == 1:
                             rega = "1110"
                         else:
                             regb = "1110"
-                    case "flo":
+                    case "ro":
                         if stage == 1:
                             rega = "1111"
                         else:
