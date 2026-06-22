@@ -52,4 +52,7 @@ Verbose mode displays information about each instruction as it is executed, incl
 # Example Programs
 ### Dots (Graphics demo)
 ![example](images/example1.png)
+### Cube (Graphics Demo)
+![example2](images/Cube.gif)
+This has been purposely slowed down. The emulator is much faster
 
