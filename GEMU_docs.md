@@ -80,6 +80,8 @@ flo (Overflow Flag)
 61439->65535 words =  Video Buffer (One word per pixel on 64x64 screen)
 
 ## Graphics
+### PXL command
+It takes 3 inputs. Position x, position y and colour. 
 ### Colour Depth
 BLACK, 
 WHITE
