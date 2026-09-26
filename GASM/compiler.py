@@ -1,14 +1,36 @@
 import os
+import sys
+
+REGISTERS = {
+    "ra": 1, "rb": 2, "rc": 3, "rd": 4, "re": 5, "rf": 6, "rg": 7, "rh": 8,
+    "ri": 9, "rj": 10, "rk": 11, "rl": 12, "rm": 13, "rn": 14, "ro": 15,
+}
+
+
+def parse_value(word):
+    if word.startswith("0x") or word.startswith("0X"):
+        return int(word, 16)
+    return int(word, 2)
+
+
+def emit(out, value):
+    bytes_ = ["0x%02X" % ((value >> 8) & 0xFF), "0x%02X" % (value & 0xFF)]
+    out.write("\n".join(bytes_) + "\n")
+    return bytes_
+
+
 fp = input("Enter program filename: ")
-fp = os.getcwd() + "/programs/" + fp
+fp = os.path.join(os.getcwd(), "programs", fp)
 fn = input("Enter a name for the generated file: ")
-fn = os.getcwd() + "/roms/" + fn + ".txt"
+fn = os.path.join(os.getcwd(), "roms", fn + ".txt")
 print(fn)
 
-with open(fp) as f:
-    for x in f:
+if not os.path.isfile(fp):
+    sys.exit("No such program: " + fp)
+
+with open(fp) as f, open(fn, "w") as nf:
+    for lineno, x in enumerate(f, start=1):
         word = ""
-        fields = []
         immediate = False
         opcode = "00000"
         rega = "0000"
@@ -16,7 +38,7 @@ with open(fp) as f:
         extra = "000"
         stage = 0
         for y in x:
-            if y == " " or y == ";":
+            if y in " \t\r;":
                 if word == "":
                     continue
 
@@ -84,82 +106,15 @@ with open(fp) as f:
                     case "STORI":
                         opcode = "00110"
                     case "nr":
-                        opcode = '0000'
-                    case "ra":
+                        rega = "0000"
+                        regb = "0000"
+
+                    case "ra" | "rb" | "rc" | "rd" | "re" | "rf" | "rg" | "rh" \
+                         | "ri" | "rj" | "rk" | "rl" | "rm" | "rn" | "ro":
                         if stage == 1:
-                            rega = "0001"
+                            rega = format(REGISTERS[word], "04b")
                         else:
-                            regb = "0001"
-                    case "rb":
-                        if stage == 1:
-                            rega = "0010"
-                        else:
-                            regb = "0010"
-                    case "rc":
-                        if stage == 1:
-                            rega = "0011"
-                        else:
-                            regb = "0011"
-                    case "rd":
-                        if stage == 1:
-                            rega = "0100"
-                        else:
-                            regb = "0100"
-                    case "re":
-                        if stage == 1:
-                            rega = "0101"
-                        else:
-                            regb = "0101"
-                    case "rf":
-                        if stage == 1:
-                            rega = "0110"
-                        else:
-                            regb = "0110"
-                    case "rg":
-                        if stage == 1:
-                            rega = "0111"
-                        else:
-                            regb = "0111"
-                    case "rh":
-                        if stage == 1:
-                            rega = "1000"
-                        else:
-                            regb = "1000"
-                    case "ri":
-                        if stage == 1:
-                            rega = "1001"
-                        else:
-                            regb = "1001"
-                    case "rj":
-                        if stage == 1:
-                            rega = "1010"
-                        else:
-                            regb = "1010"
-                    case "rk":
-                        if stage == 1:
-                            rega = "1011"
-                        else:
-                            regb = "1011"
-                    case "rl":
-                        if stage == 1:
-                            rega = "1100"
-                        else:
-                            regb = "1100"
-                    case "rm":
-                        if stage == 1:
-                            rega = "1101"
-                        else:
-                            regb = "1101"
-                    case "rn":
-                        if stage == 1:
-                            rega = "1110"
-                        else:
-                            regb = "1110"
-                    case "ro":
-                        if stage == 1:
-                            rega = "1111"
-                        else:
-                            regb = "1111"
+                            regb = format(REGISTERS[word], "04b")
 
                     case _:
                         immediate = True
@@ -171,11 +126,20 @@ with open(fp) as f:
             else:
                 word += y
 
+        if word.strip():
+            sys.exit("Unexpected '%s' on line %d of %s" % (word.strip(), lineno, fp))
+        if stage == 0:
+            continue
+
         if immediate == False:
-            line = opcode + rega + regb + extra
+            line = int(opcode + rega + regb + extra, 2)
         else:
-            line = line
-        
-        with open(fn, "a") as nf:
-            nf.write(line + "\n")
-        print(line)
+            try:
+                line = parse_value(line)
+            except ValueError:
+                sys.exit("Invalid value '%s' on line %d of %s" % (line, lineno, fp))
+            if not 0 <= line <= 0xFFFF:
+                sys.exit("Value '%s' on line %d of %s does not fit in 16 bits"
+                         % (line, lineno, fp))
+
+        print(" ".join(emit(nf, line)))
